@@ -25,14 +25,16 @@ cd kafka-docker-compose
 ```
 
 2. **اجرای سرویس‌ها**:
-‍‍‍```bash
+
+```bash
 docker-compose up -d
-‍‍‍```
+```
 
 3. **بررسی وضعیت سرویس‌ها**:
-‍‍‍```bash
+
+```bash
 docker-compose ps
-‍‍‍```
+```
 
 ## 🌐 دسترسی به سرویس‌ها
 
@@ -69,29 +71,31 @@ bootstrap.servers=localhost:9093
 ## 🧪 تست سریع
 
 ### ایجاد تاپیک تست:
-‍‍‍```bash
+
+```bash
 docker exec -it kafka kafka-topics \
   --create \
   --topic test-topic \
   --bootstrap-server kafka:9092 \
   --partitions 1 \
-  --replication-factor 1
-‍‍‍```
+  --replication-factor \
+  ```
 
 ### تولید پیام:
-‍‍‍```bash
+
+```bash
 docker exec -it kafka kafka-console-producer \
   --topic test-topic \
   --bootstrap-server kafka:9092
-‍‍‍```
+  ```
 
 ### مصرف پیام:
-‍‍‍```bash
+```bash
 docker exec -it kafka kafka-console-consumer \
   --topic test-topic \
   --bootstrap-server kafka:9092 \
   --from-beginning
-‍‍‍```
+  ```
 
 ## ⚙️ پیکربندی
 
