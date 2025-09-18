@@ -20,9 +20,9 @@
 1. **کلون یا دانلود پروژه**:
 
 ```bash
-git clone <https://github.com/naderii/kafka>
+git clone https://github.com/naderii/kafka
 cd kafka-docker-compose
-‍‍```
+```
 
 2. **اجرای سرویس‌ها**:
 ‍‍‍```bash
