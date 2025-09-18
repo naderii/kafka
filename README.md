@@ -113,13 +113,15 @@ docker exec -it kafka kafka-console-consumer \
 
 
 # توقف با حفظ داده‌ها
+
 ```bash
 docker-compose down
 ```
 # توقف با حذف کامل داده‌ها
+
 ```bash
 docker-compose down -v
-‍‍‍```
+```
 
 ## 📁 ساختار پروژه
 
