@@ -161,21 +161,21 @@ docker-compose down -v
 
 ‍‍‍
 kafka-booking-system/
-├── docker-compose.yml # فایل اصلی Docker Compose
-├── booking-service/ # سرویس رزرو نوبت
-│ ├── Dockerfile
-│ ├── requirements.txt
-│ └── app.py
-├── notification-service/ # سرویس نوتیفیکیشن
-│ ├── Dockerfile
-│ ├── requirements.txt
-│ └── app.py
-├── frontend/ # رابط کاربری سیستم
-│ ├── Dockerfile
-│ ├── package.json
-│ ├── app.js
-│ └── public/
-│ └── index.html
+|-- docker-compose.yml # فایل اصلی Docker Compose
+|-- booking-service/ # سرویس رزرو نوبت
+| |-- Dockerfile
+| |-- requirements.txt
+| └── app.py
+|-- notification-service/ # سرویس نوتیفیکیشن
+| |-- Dockerfile
+| |-- requirements.txt
+| └── app.py
+|-- frontend/ # رابط کاربری سیستم
+| |-- Dockerfile
+| |-- package.json
+| |-- app.js
+| └── public/
+| └── index.html
 └── README.md # مستندات پروژه
 
 ## ⚠️ نکات مهم
