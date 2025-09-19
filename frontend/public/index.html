@@ -1,0 +1,162 @@
+<!DOCTYPE html>
+<html lang="fa">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>سیستم نوبت دهی</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            margin: 0;
+            padding: 20px;
+            direction: rtl;
+            background-color: #f5f5f5;
+        }
+        .container {
+            max-width: 800px;
+            margin: 0 auto;
+            background: white;
+            padding: 20px;
+            border-radius: 8px;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #333;
+            text-align: center;
+        }
+        .form-group {
+            margin-bottom: 15px;
+        }
+        label {
+            display: block;
+            margin-bottom: 5px;
+            font-weight: bold;
+        }
+        input, select {
+            width: 100%;
+            padding: 8px;
+            border: 1px solid #ddd;
+            border-radius: 4px;
+        }
+        button {
+            background-color: #4CAF50;
+            color: white;
+            padding: 10px 15px;
+            border: none;
+            border-radius: 4px;
+            cursor: pointer;
+            font-size: 16px;
+        }
+        button:hover {
+            background-color: #45a049;
+        }
+        .notifications {
+            margin-top: 30px;
+            border-top: 1px solid #ddd;
+            padding-top: 20px;
+        }
+        .notification {
+            background-color: #f9f9f9;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 4px;
+            border-right: 4px solid #4CAF50;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>سیستم رزرو نوبت</h1>
+        
+        <form id="bookingForm">
+            <div class="form-group">
+                <label for="customer_name">نام مشتری:</label>
+                <input type="text" id="customer_name" name="customer_name" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="service">نوع خدمت:</label>
+                <select id="service" name="service" required>
+                    <option value="">انتخاب کنید</option>
+                    <option value="پزشک عمومی">پزشک عمومی</option>
+                    <option value="دندانپزشک">دندانپزشک</option>
+                    <option value="متخصص قلب">متخصص قلب</option>
+                    <option value="فیزیوتراپی">فیزیوتراپی</option>
+                </select>
+            </div>
+            
+            <div class="form-group">
+                <label for="date">تاریخ:</label>
+                <input type="date" id="date" name="date" required>
+            </div>
+            
+            <div class="form-group">
+                <label for="time">زمان:</label>
+                <input type="time" id="time" name="time" required>
+            </div>
+            
+            <button type="submit">رزرو نوبت</button>
+        </form>
+        
+        <div class="notifications">
+            <h2>اعلان‌ها</h2>
+            <button onclick="loadNotifications()">بارگذاری اعلان‌ها</button>
+            <div id="notificationList"></div>
+        </div>
+    </div>
+
+    <script>
+        document.getElementById('bookingForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = {
+                id: Date.now(), // تولید یک ID ساده
+                customer_name: document.getElementById('customer_name').value,
+                service: document.getElementById('service').value,
+                date: document.getElementById('date').value,
+                time: document.getElementById('time').value
+            };
+            
+            try {
+                const response = await fetch('/book', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(formData)
+                });
+                
+                const result = await response.json();
+                alert('نوبت با موفقیت رزرو شد!');
+                document.getElementById('bookingForm').reset();
+            } catch (error) {
+                alert('خطا در رزرو نوبت: ' + error.message);
+            }
+        });
+        
+        async function loadNotifications() {
+            try {
+                const response = await fetch('/notifications');
+                const notifications = await response.json();
+                
+                const notificationList = document.getElementById('notificationList');
+                notificationList.innerHTML = '';
+                
+                notifications.forEach(notif => {
+                    const div = document.createElement('div');
+                    div.className = 'notification';
+                    div.innerHTML = `
+                        <strong>${notif.message}</strong>
+                        <p>مشتری: ${notif.booking_details.customer_name}</p>
+                        <p>خدمت: ${notif.booking_details.service}</p>
+                        <p>تاریخ: ${notif.booking_details.date} - زمان: ${notif.booking_details.time}</p>
+                    `;
+                    notificationList.appendChild(div);
+                });
+            } catch (error) {
+                alert('خطا در بارگذاری اعلان‌ها: ' + error.message);
+            }
+        }
+    </script>
+</body>
+</html>
