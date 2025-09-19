@@ -1,7 +1,8 @@
 from kafka import KafkaConsumer
 import json
 import threading
-from flask import Flask, jsonify
+from flask import Flask, jsonify, Response
+import time
 
 app = Flask(__name__)
 
@@ -26,7 +27,7 @@ def consume_messages():
         booking_data = message.value
         notification = {
             'type': 'NEW_BOOKING',
-            'message': f"New booking created for {booking_data['customer_name']}",
+            'message': f"نوبت جدید برای {booking_data['customer_name']}",
             'booking_details': booking_data,
             'timestamp': message.timestamp
         }
@@ -37,6 +38,20 @@ def consume_messages():
 @app.route('/notifications', methods=['GET'])
 def get_notifications():
     return jsonify(notifications)
+
+@app.route('/notifications/stream')
+def stream_notifications():
+    def event_stream():
+        last_index = len(notifications)
+        while True:
+            # اگر نوتیفیکیشن جدیدی اضافه شده
+            if len(notifications) > last_index:
+                for notification in notifications[last_index:]:
+                    yield f"data: {json.dumps(notification)}\n\n"
+                last_index = len(notifications)
+            time.sleep(1)
+    
+    return Response(event_stream(), mimetype="text/event-stream")
 
 if __name__ == '__main__':
     # شروع مصرف‌کننده در یک thread جداگانه

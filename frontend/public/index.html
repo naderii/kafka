@@ -61,6 +61,29 @@
             margin-bottom: 10px;
             border-radius: 4px;
             border-right: 4px solid #4CAF50;
+            animation: fadeIn 0.5s;
+        }
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+        #notificationHeader {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+        }
+        #connectionStatus {
+            padding: 5px 10px;
+            border-radius: 4px;
+            font-size: 14px;
+        }
+        .connected {
+            background-color: #4CAF50;
+            color: white;
+        }
+        .disconnected {
+            background-color: #f44336;
+            color: white;
         }
     </style>
 </head>
@@ -99,18 +122,78 @@
         </form>
         
         <div class="notifications">
-            <h2>اعلان‌ها</h2>
-            <button onclick="loadNotifications()">بارگذاری اعلان‌ها</button>
+            <div id="notificationHeader">
+                <h2>اعلان‌ها</h2>
+                <span id="connectionStatus" class="disconnected">قطع ارتباط</span>
+            </div>
             <div id="notificationList"></div>
         </div>
     </div>
 
     <script>
+        let eventSource;
+        
+        // برقراری ارتباط SSE
+        function connectSSE() {
+            try {
+                eventSource = new EventSource('/notifications/stream');
+                
+                eventSource.onopen = function() {
+                    document.getElementById('connectionStatus').textContent = 'متصل';
+                    document.getElementById('connectionStatus').className = 'connected';
+                    console.log('اتصال برقرار شد');
+                };
+                
+                eventSource.onmessage = function(event) {
+                    try {
+                        const notification = JSON.parse(event.data);
+                        addNotificationToPage(notification);
+                    } catch (e) {
+                        console.log('پیام معمولی:', event.data);
+                    }
+                };
+                
+                eventSource.onerror = function() {
+                    document.getElementById('connectionStatus').textContent = 'قطع ارتباط';
+                    document.getElementById('connectionStatus').className = 'disconnected';
+                    console.log('اتصال قطع شد');
+                    if (eventSource) {
+                        eventSource.close();
+                    }
+                    
+                    // تلاش مجدد برای اتصال پس از 3 ثانیه
+                    setTimeout(connectSSE, 3000);
+                };
+            } catch (error) {
+                console.error('خطا در اتصال:', error);
+                setTimeout(connectSSE, 3000);
+            }
+        }
+        
+        // نمایش نوتیفیکیشن در صفحه
+        function addNotificationToPage(notification) {
+            const notificationList = document.getElementById('notificationList');
+            
+            const div = document.createElement('div');
+            div.className = 'notification';
+            div.innerHTML = `
+                <strong>${notification.message}</strong>
+                <p>مشتری: ${notification.booking_details.customer_name}</p>
+                <p>خدمت: ${notification.booking_details.service}</p>
+                <p>تاریخ: ${notification.booking_details.date} - زمان: ${notification.booking_details.time}</p>
+                <small>${new Date().toLocaleString('fa-IR')}</small>
+            `;
+            
+            // اضافه کردن نوتیفیکیشن جدید به بالای لیست
+            notificationList.insertBefore(div, notificationList.firstChild);
+        }
+        
+        // ارسال فرم رزرو
         document.getElementById('bookingForm').addEventListener('submit', async function(e) {
             e.preventDefault();
             
             const formData = {
-                id: Date.now(), // تولید یک ID ساده
+                id: Date.now(),
                 customer_name: document.getElementById('customer_name').value,
                 service: document.getElementById('service').value,
                 date: document.getElementById('date').value,
@@ -134,29 +217,22 @@
             }
         });
         
-        async function loadNotifications() {
-            try {
-                const response = await fetch('/notifications');
-                const notifications = await response.json();
-                
-                const notificationList = document.getElementById('notificationList');
-                notificationList.innerHTML = '';
-                
-                notifications.forEach(notif => {
-                    const div = document.createElement('div');
-                    div.className = 'notification';
-                    div.innerHTML = `
-                        <strong>${notif.message}</strong>
-                        <p>مشتری: ${notif.booking_details.customer_name}</p>
-                        <p>خدمت: ${notif.booking_details.service}</p>
-                        <p>تاریخ: ${notif.booking_details.date} - زمان: ${notif.booking_details.time}</p>
-                    `;
-                    notificationList.appendChild(div);
+        // شروع اتصال هنگام بارگذاری صفحه
+        document.addEventListener('DOMContentLoaded', function() {
+            connectSSE();
+            
+            // بارگذاری نوتیفیکیشن‌های قبلی
+            fetch('/notifications')
+                .then(response => response.json())
+                .then(notifications => {
+                    notifications.forEach(notification => {
+                        addNotificationToPage(notification);
+                    });
+                })
+                .catch(error => {
+                    console.error('خطا در بارگذاری نوتیفیکیشن‌های قبلی:', error);
                 });
-            } catch (error) {
-                alert('خطا در بارگذاری اعلان‌ها: ' + error.message);
-            }
-        }
+        });
     </script>
 </body>
 </html>
